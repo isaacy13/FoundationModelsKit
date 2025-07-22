@@ -43,7 +43,7 @@ public struct WebMetadataTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     let urlString = arguments.url.trimmingCharacters(in: .whitespacesAndNewlines)
 
     guard !urlString.isEmpty else {
@@ -87,28 +87,24 @@ public struct WebMetadataTool: Tool {
     )
   }
 
-  private func createSuccessOutput(from metadata: WebMetadata) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "url": metadata.url,
-        "title": metadata.title,
-        "description": metadata.description,
-        "imageURL": metadata.imageURL ?? "",
-        "message": "Successfully extracted web metadata",
-      ])
-    )
+  private func createSuccessOutput(from metadata: WebMetadata) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "success",
+      "url": metadata.url,
+      "title": metadata.title,
+      "description": metadata.description,
+      "imageURL": metadata.imageURL ?? "",
+      "message": "Successfully extracted web metadata",
+    ])
   }
 
-  private func createErrorOutput(for url: String, error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "url": url,
-        "error": error.localizedDescription,
-        "message": "Failed to fetch web metadata",
-      ])
-    )
+  private func createErrorOutput(for url: String, error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "error",
+      "url": url,
+      "error": error.localizedDescription,
+      "message": "Failed to fetch web metadata",
+    ])
   }
 }
 

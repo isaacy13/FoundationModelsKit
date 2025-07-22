@@ -83,7 +83,7 @@ public struct LocationTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     switch arguments.action.lowercased() {
     case "current":
       return await getCurrentLocation()
@@ -100,7 +100,7 @@ public struct LocationTool: Tool {
     }
   }
 
-  private func getCurrentLocation() async -> ToolOutput {
+  private func getCurrentLocation() async -> GeneratedContent {
     // Check authorization status
     let authStatus = locationManager.authorizationStatus
 
@@ -136,21 +136,19 @@ public struct LocationTool: Tool {
 
     let address = formatAddress(mapItem: mapItem)
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "latitude": location.coordinate.latitude,
-        "longitude": location.coordinate.longitude,
-        "altitude": location.altitude,
-        "accuracy": location.horizontalAccuracy,
-        "address": address,
-        "timestamp": formatDate(location.timestamp),
-        "message": "Current location: \(address)",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "latitude": location.coordinate.latitude,
+      "longitude": location.coordinate.longitude,
+      "altitude": location.altitude,
+      "accuracy": location.horizontalAccuracy,
+      "address": address,
+      "timestamp": formatDate(location.timestamp),
+      "message": "Current location: \(address)",
+    ])
   }
 
-  private func geocodeAddress(address: String?) async -> ToolOutput {
+  private func geocodeAddress(address: String?) async -> GeneratedContent {
     guard let address = address, !address.isEmpty else {
       return createErrorOutput(error: LocationError.missingAddress)
     }
@@ -168,26 +166,24 @@ public struct LocationTool: Tool {
       let location = mapItem.location
       let formattedAddress = formatAddress(mapItem: mapItem)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "query": address,
-          "latitude": location.coordinate.latitude,
-          "longitude": location.coordinate.longitude,
-          "formattedAddress": formattedAddress,
-          "country": "",  // These would need to be extracted from addressRepresentations
-          "state": "",
-          "city": "",
-          "postalCode": "",
-          "message": "Location found: \(formattedAddress)",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "query": address,
+        "latitude": location.coordinate.latitude,
+        "longitude": location.coordinate.longitude,
+        "formattedAddress": formattedAddress,
+        "country": "",  // These would need to be extracted from addressRepresentations
+        "state": "",
+        "city": "",
+        "postalCode": "",
+        "message": "Location found: \(formattedAddress)",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func reverseGeocode(latitude: Double?, longitude: Double?) async -> ToolOutput {
+  private func reverseGeocode(latitude: Double?, longitude: Double?) async -> GeneratedContent {
     guard let latitude = latitude,
       let longitude = longitude
     else {
@@ -208,26 +204,24 @@ public struct LocationTool: Tool {
 
       let address = formatAddress(mapItem: mapItem)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "latitude": latitude,
-          "longitude": longitude,
-          "address": address,
-          "country": "",  // These would need to be extracted from addressRepresentations
-          "state": "",
-          "city": "",
-          "street": "",
-          "postalCode": "",
-          "message": "Address: \(address)",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "latitude": latitude,
+        "longitude": longitude,
+        "address": address,
+        "country": "",  // These would need to be extracted from addressRepresentations
+        "state": "",
+        "city": "",
+        "street": "",
+        "postalCode": "",
+        "message": "Address: \(address)",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func searchPlaces(query: String?, radius: Double?) async -> ToolOutput {
+  private func searchPlaces(query: String?, radius: Double?) async -> GeneratedContent {
     guard let query = query, !query.isEmpty else {
       return createErrorOutput(error: LocationError.missingSearchQuery)
     }
@@ -280,21 +274,19 @@ public struct LocationTool: Tool {
         placesDescription = "No places found matching '\(query)'"
       }
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "query": query,
-          "resultCount": response.mapItems.count,
-          "places": placesDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-          "message": "Found \(response.mapItems.count) place(s)",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "query": query,
+        "resultCount": response.mapItems.count,
+        "places": placesDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+        "message": "Found \(response.mapItems.count) place(s)",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func calculateDistance(arguments: Arguments) -> ToolOutput {
+  private func calculateDistance(arguments: Arguments) -> GeneratedContent {
     guard let lat1 = arguments.latitude,
       let lon1 = arguments.longitude,
       let lat2 = arguments.latitude2,
@@ -312,22 +304,20 @@ public struct LocationTool: Tool {
     let bearing = calculateBearing(from: location1, to: location2)
     let direction = compassDirection(from: bearing)
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "location1_latitude": lat1,
-        "location1_longitude": lon1,
-        "location2_latitude": lat2,
-        "location2_longitude": lon2,
-        "distanceMeters": distance,
-        "distanceKilometers": distance / 1000,
-        "distanceMiles": distance / 1609.344,
-        "formattedDistance": formatDistance(distance),
-        "bearing": bearing,
-        "direction": direction,
-        "message": "Distance: \(formatDistance(distance)) \(direction)",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "location1_latitude": lat1,
+      "location1_longitude": lon1,
+      "location2_latitude": lat2,
+      "location2_longitude": lon2,
+      "distanceMeters": distance,
+      "distanceKilometers": distance / 1000,
+      "distanceMiles": distance / 1609.344,
+      "formattedDistance": formatDistance(distance),
+      "bearing": bearing,
+      "direction": direction,
+      "message": "Distance: \(formatDistance(distance)) \(direction)",
+    ])
   }
 
   private func formatAddress(mapItem: MKMapItem?) -> String {
@@ -386,7 +376,7 @@ public struct LocationTool: Tool {
     return formatter.string(from: date)
   }
 
-  private func requestLocationPermission() async -> ToolOutput {
+  private func requestLocationPermission() async -> GeneratedContent {
     // Create a location delegate to handle authorization changes
     let delegate = LocationDelegate()
     locationManager.delegate = delegate
@@ -401,25 +391,21 @@ public struct LocationTool: Tool {
     #endif
 
     // Return informative message
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "permission_requested",
-        "message":
-          "Location permission requested. Please allow location access in the system alert and try again.",
-        "instruction":
-          "After granting permission, please run this tool again to get your location.",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "permission_requested",
+      "message":
+        "Location permission requested. Please allow location access in the system alert and try again.",
+      "instruction":
+        "After granting permission, please run this tool again to get your location.",
+    ])
   }
 
-  private func createErrorOutput(error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "error": error.localizedDescription,
-        "message": "Failed to perform location operation",
-      ])
-    )
+  private func createErrorOutput(error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "error",
+      "error": error.localizedDescription,
+      "message": "Failed to perform location operation",
+    ])
   }
 }
 

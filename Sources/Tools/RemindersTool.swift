@@ -84,7 +84,7 @@ public struct RemindersTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     // Request access if needed
     let authorized = await requestAccess()
     guard authorized else {
@@ -119,7 +119,7 @@ public struct RemindersTool: Tool {
     }
   }
 
-  private func createReminder(arguments: Arguments) throws -> ToolOutput {
+  private func createReminder(arguments: Arguments) throws -> GeneratedContent {
     guard let title = arguments.title, !title.isEmpty else {
       return createErrorOutput(error: RemindersError.missingTitle)
     }
@@ -169,23 +169,21 @@ public struct RemindersTool: Tool {
     do {
       try eventStore.save(reminder, commit: true)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Reminder created successfully",
-          "reminderId": reminder.calendarItemIdentifier,
-          "title": reminder.title ?? "",
-          "list": reminder.calendar?.title ?? "",
-          "dueDate": formatDateComponents(reminder.dueDateComponents),
-          "priority": getPriorityString(reminder.priority),
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Reminder created successfully",
+        "reminderId": reminder.calendarItemIdentifier,
+        "title": reminder.title ?? "",
+        "list": reminder.calendar?.title ?? "",
+        "dueDate": formatDateComponents(reminder.dueDateComponents),
+        "priority": getPriorityString(reminder.priority),
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryReminders(arguments: Arguments) throws -> ToolOutput {
+  private func queryReminders(arguments: Arguments) throws -> GeneratedContent {
     let calendars = eventStore.calendars(for: .reminder)
     var predicate: NSPredicate
 
@@ -245,7 +243,7 @@ public struct RemindersTool: Tool {
     var remindersDescription = ""
 
     for (index, reminder) in reminders.enumerated() {
-      let completed = reminder.isCompleted ? "✓" : "○"
+      let completed = reminder.isCompleted ? "" : ""
       let priority = getPriorityString(reminder.priority)
       let dueDate = formatDateComponents(reminder.dueDateComponents)
       let list = reminder.calendar?.title ?? "Unknown List"
@@ -268,18 +266,16 @@ public struct RemindersTool: Tool {
       remindersDescription = "No reminders found with filter '\(filter)'"
     }
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "filter": filter,
-        "count": reminders.count,
-        "reminders": remindersDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Found \(reminders.count) reminder(s)",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "filter": filter,
+      "count": reminders.count,
+      "reminders": remindersDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+      "message": "Found \(reminders.count) reminder(s)",
+    ])
   }
 
-  private func completeReminder(reminderId: String?) throws -> ToolOutput {
+  private func completeReminder(reminderId: String?) throws -> GeneratedContent {
     guard let id = reminderId else {
       return createErrorOutput(error: RemindersError.missingReminderId)
     }
@@ -294,21 +290,19 @@ public struct RemindersTool: Tool {
     do {
       try eventStore.save(reminder, commit: true)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Reminder completed successfully",
-          "reminderId": reminder.calendarItemIdentifier,
-          "title": reminder.title ?? "",
-          "completedAt": formatDate(Date()),
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Reminder completed successfully",
+        "reminderId": reminder.calendarItemIdentifier,
+        "title": reminder.title ?? "",
+        "completedAt": formatDate(Date()),
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func updateReminder(arguments: Arguments) throws -> ToolOutput {
+  private func updateReminder(arguments: Arguments) throws -> GeneratedContent {
     guard let reminderId = arguments.reminderId else {
       return createErrorOutput(error: RemindersError.missingReminderId)
     }
@@ -353,23 +347,21 @@ public struct RemindersTool: Tool {
     do {
       try eventStore.save(reminder, commit: true)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Reminder updated successfully",
-          "reminderId": reminder.calendarItemIdentifier,
-          "title": reminder.title ?? "",
-          "list": reminder.calendar?.title ?? "",
-          "dueDate": formatDateComponents(reminder.dueDateComponents),
-          "priority": getPriorityString(reminder.priority),
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Reminder updated successfully",
+        "reminderId": reminder.calendarItemIdentifier,
+        "title": reminder.title ?? "",
+        "list": reminder.calendar?.title ?? "",
+        "dueDate": formatDateComponents(reminder.dueDateComponents),
+        "priority": getPriorityString(reminder.priority),
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func deleteReminder(reminderId: String?) throws -> ToolOutput {
+  private func deleteReminder(reminderId: String?) throws -> GeneratedContent {
     guard let id = reminderId else {
       return createErrorOutput(error: RemindersError.missingReminderId)
     }
@@ -383,13 +375,11 @@ public struct RemindersTool: Tool {
     do {
       try eventStore.remove(reminder, commit: true)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Reminder deleted successfully",
-          "deletedTitle": title,
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Reminder deleted successfully",
+        "deletedTitle": title,
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
@@ -455,14 +445,12 @@ public struct RemindersTool: Tool {
     }
   }
 
-  private func createErrorOutput(error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "error": error.localizedDescription,
-        "message": "Failed to perform reminder operation",
-      ])
-    )
+  private func createErrorOutput(error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "error",
+      "error": error.localizedDescription,
+      "message": "Failed to perform reminder operation",
+    ])
   }
 }
 

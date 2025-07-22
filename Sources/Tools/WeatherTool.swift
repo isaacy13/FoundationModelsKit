@@ -128,7 +128,7 @@ public struct WeatherTool: Tool {
     }
   }
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     let cityName = arguments.city.trimmingCharacters(in: .whitespacesAndNewlines)
 
     do {
@@ -220,35 +220,33 @@ public struct WeatherTool: Tool {
     }
   }
 
-  private func createSuccessOutput(from weatherData: WeatherData) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "city": weatherData.city,
-        "temperature": weatherData.temperature,
-        "condition": weatherData.condition,
-        "humidity": weatherData.humidity,
-        "windSpeed": weatherData.windSpeed,
-        "feelsLike": weatherData.feelsLike,
-        "pressure": weatherData.pressure,
-        "precipitation": weatherData.precipitation,
-        "unit": weatherData.unit,
-      ]))
+  private func createSuccessOutput(from weatherData: WeatherData) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "city": weatherData.city,
+      "temperature": weatherData.temperature,
+      "condition": weatherData.condition,
+      "humidity": weatherData.humidity,
+      "windSpeed": weatherData.windSpeed,
+      "feelsLike": weatherData.feelsLike,
+      "pressure": weatherData.pressure,
+      "precipitation": weatherData.precipitation,
+      "unit": weatherData.unit,
+    ])
   }
 
-  private func createErrorOutput(for cityName: String, error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "city": cityName,
-        "error": "Unable to fetch weather data: \(error.localizedDescription)",
-        "temperature": 0,
-        "condition": "Unknown",
-        "humidity": 0,
-        "windSpeed": 0,
-        "feelsLike": 0,
-        "pressure": 0,
-        "precipitation": 0,
-        "unit": "Celsius",
-      ]))
+  private func createErrorOutput(for cityName: String, error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "city": cityName,
+      "error": "Unable to fetch weather data: \(error.localizedDescription)",
+      "temperature": 0,
+      "condition": "Unknown",
+      "humidity": 0,
+      "windSpeed": 0,
+      "feelsLike": 0,
+      "pressure": 0,
+      "precipitation": 0,
+      "unit": "Celsius",
+    ])
   }
 }
 

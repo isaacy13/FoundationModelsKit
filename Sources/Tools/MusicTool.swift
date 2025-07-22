@@ -64,7 +64,7 @@ public struct MusicTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     // Check if MusicKit is authorized
     let authStatus = MusicAuthorization.currentStatus
 
@@ -98,7 +98,7 @@ public struct MusicTool: Tool {
     }
   }
 
-  private func searchMusic(query: String?, type: String?, limit: Int?) async -> ToolOutput {
+  private func searchMusic(query: String?, type: String?, limit: Int?) async -> GeneratedContent {
     guard let query = query, !query.isEmpty else {
       return createErrorOutput(error: MusicError.missingQuery)
     }
@@ -151,21 +151,19 @@ public struct MusicTool: Tool {
         resultDescription = "No results found for '\(query)'"
       }
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "query": query,
-          "resultCount": response.songs.count + response.artists.count + response.albums.count,
-          "results": resultDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-          "message": "Found music matching '\(query)'",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "query": query,
+        "resultCount": response.songs.count + response.artists.count + response.albums.count,
+        "results": resultDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+        "message": "Found music matching '\(query)'",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func playMusic(itemId: String?, query: String?) async -> ToolOutput {
+  private func playMusic(itemId: String?, query: String?) async -> GeneratedContent {
     do {
       let player = ApplicationMusicPlayer.shared
 
@@ -179,14 +177,12 @@ public struct MusicTool: Tool {
           player.queue = [song]
           try await player.play()
 
-          return ToolOutput(
-            GeneratedContent(properties: [
-              "status": "success",
-              "action": "play",
-              "nowPlaying": "\(song.title) by \(song.artistName)",
-              "message": "Now playing: \(song.title)",
-            ])
-          )
+          return GeneratedContent(properties: [
+            "status": "success",
+            "action": "play",
+            "nowPlaying": "\(song.title) by \(song.artistName)",
+            "message": "Now playing: \(song.title)",
+          ])
         } else {
           return createErrorOutput(error: MusicError.itemNotFound)
         }
@@ -200,143 +196,121 @@ public struct MusicTool: Tool {
           player.queue = [song]
           try await player.play()
 
-          return ToolOutput(
-            GeneratedContent(properties: [
-              "status": "success",
-              "action": "play",
-              "nowPlaying": "\(song.title) by \(song.artistName)",
-              "message": "Now playing: \(song.title)",
-            ])
-          )
+          return GeneratedContent(properties: [
+            "status": "success",
+            "action": "play",
+            "nowPlaying": "\(song.title) by \(song.artistName)",
+            "message": "Now playing: \(song.title)",
+          ])
         } else {
           return createErrorOutput(error: MusicError.noResults)
         }
       } else {
         // Resume playback
         try await player.play()
-        return ToolOutput(
-          GeneratedContent(properties: [
-            "status": "success",
-            "action": "resume",
-            "message": "Playback resumed",
-          ])
-        )
+        return GeneratedContent(properties: [
+          "status": "success",
+          "action": "resume",
+          "message": "Playback resumed",
+        ])
       }
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func pauseMusic() -> ToolOutput {
+  private func pauseMusic() -> GeneratedContent {
     let player = ApplicationMusicPlayer.shared
     player.pause()
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "action": "pause",
-        "message": "Playback paused",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "action": "pause",
+      "message": "Playback paused",
+    ])
   }
 
-  private func skipToNext() async -> ToolOutput {
+  private func skipToNext() async -> GeneratedContent {
     let player = ApplicationMusicPlayer.shared
 
     do {
       try await player.skipToNextEntry()
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "action": "next",
-          "message": "Skipped to next song",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "action": "next",
+        "message": "Skipped to next song",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func skipToPrevious() async -> ToolOutput {
+  private func skipToPrevious() async -> GeneratedContent {
     let player = ApplicationMusicPlayer.shared
 
     do {
       try await player.skipToPreviousEntry()
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "action": "previous",
-          "message": "Skipped to previous song",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "action": "previous",
+        "message": "Skipped to previous song",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func getCurrentSong() -> ToolOutput {
+  private func getCurrentSong() -> GeneratedContent {
     let player = ApplicationMusicPlayer.shared
 
     guard let nowPlaying = player.queue.currentEntry else {
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "No song currently playing",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "No song currently playing",
+      ])
     }
 
     // Check if the entry has an item (non-transient)
     if case .song(let song) = nowPlaying.item {
       if let album = song.albumTitle {
-        return ToolOutput(
-          GeneratedContent(properties: [
-            "status": "success",
-            "id": song.id.rawValue,
-            "playbackState": String(describing: player.state.playbackStatus),
-            "title": song.title,
-            "artist": song.artistName,
-            "album": album,
-            "message": "Currently playing: \(song.title) by \(song.artistName)",
-          ])
-        )
+        return GeneratedContent(properties: [
+          "status": "success",
+          "id": song.id.rawValue,
+          "playbackState": String(describing: player.state.playbackStatus),
+          "title": song.title,
+          "artist": song.artistName,
+          "album": album,
+          "message": "Currently playing: \(song.title) by \(song.artistName)",
+        ])
       } else {
-        return ToolOutput(
-          GeneratedContent(properties: [
-            "status": "success",
-            "id": song.id.rawValue,
-            "playbackState": String(describing: player.state.playbackStatus),
-            "title": song.title,
-            "artist": song.artistName,
-            "message": "Currently playing: \(song.title) by \(song.artistName)",
-          ])
-        )
+        return GeneratedContent(properties: [
+          "status": "success",
+          "id": song.id.rawValue,
+          "playbackState": String(describing: player.state.playbackStatus),
+          "title": song.title,
+          "artist": song.artistName,
+          "message": "Currently playing: \(song.title) by \(song.artistName)",
+        ])
       }
     } else if let item = nowPlaying.item {
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "id": item.id.rawValue,
-          "playbackState": String(describing: player.state.playbackStatus),
-          "message": "Currently playing: \(item.id)",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "id": item.id.rawValue,
+        "playbackState": String(describing: player.state.playbackStatus),
+        "message": "Currently playing: \(item.id)",
+      ])
     } else if let transientItem = nowPlaying.transientItem {
       // Handle transient items
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Loading: \(transientItem.id)",
-          "isTransient": true,
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Loading: \(transientItem.id)",
+        "isTransient": true,
+      ])
     } else {
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Unknown playback state",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Unknown playback state",
+      ])
     }
   }
 
@@ -346,14 +320,12 @@ public struct MusicTool: Tool {
     return String(format: "%d:%02d", minutes, seconds)
   }
 
-  private func createErrorOutput(error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "error": error.localizedDescription,
-        "message": "Failed to perform music operation",
-      ])
-    )
+  private func createErrorOutput(error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "error",
+      "error": error.localizedDescription,
+      "message": "Failed to perform music operation",
+    ])
   }
 }
 

@@ -83,7 +83,7 @@ public struct WebTool: Tool {
     self.exaService = ExaWebService()
   }
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     let searchQuery = arguments.query.trimmingCharacters(in: .whitespacesAndNewlines)
 
     guard !searchQuery.isEmpty else {
@@ -165,29 +165,27 @@ public struct WebTool: Tool {
     return summary
   }
 
-  private func createSuccessOutput(from searchData: SearchData) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "query": searchData.query,
-        "abstract": searchData.abstract,
-        "abstractSource": searchData.abstractSource,
-        "relatedTopicsCount": searchData.relatedTopics.count,
-        "summary": searchData.summary,
-        "status": "success",
-      ]))
+  private func createSuccessOutput(from searchData: SearchData) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "query": searchData.query,
+      "abstract": searchData.abstract,
+      "abstractSource": searchData.abstractSource,
+      "relatedTopicsCount": searchData.relatedTopics.count,
+      "summary": searchData.summary,
+      "status": "success",
+    ])
   }
 
-  private func createErrorOutput(for query: String, error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "query": query,
-        "error": "Unable to perform web search: \(error.localizedDescription)",
-        "abstract": "",
-        "abstractSource": "",
-        "relatedTopicsCount": 0,
-        "summary": "Search failed for query: '\(query)'",
-        "status": "error",
-      ]))
+  private func createErrorOutput(for query: String, error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "query": query,
+      "error": "Unable to perform web search: \(error.localizedDescription)",
+      "abstract": "",
+      "abstractSource": "",
+      "relatedTopicsCount": 0,
+      "summary": "Search failed for query: '\(query)'",
+      "status": "error",
+    ])
   }
 }
 
