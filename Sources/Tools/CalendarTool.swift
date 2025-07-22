@@ -86,7 +86,7 @@ public struct CalendarTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     // Request access if needed
     let authorized = await requestAccess()
     guard authorized else {
@@ -119,7 +119,7 @@ public struct CalendarTool: Tool {
     }
   }
 
-  private func createEvent(arguments: Arguments) throws -> ToolOutput {
+  private func createEvent(arguments: Arguments) throws -> GeneratedContent {
     guard let title = arguments.title, !title.isEmpty else {
       return createErrorOutput(error: CalendarError.missingTitle)
     }
@@ -169,24 +169,22 @@ public struct CalendarTool: Tool {
     do {
       try eventStore.save(event, span: .thisEvent)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Event created successfully",
-          "eventId": event.eventIdentifier ?? "",
-          "title": event.title ?? "",
-          "startDate": formatDate(event.startDate),
-          "endDate": formatDate(event.endDate),
-          "location": event.location ?? "",
-          "calendar": event.calendar?.title ?? "",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Event created successfully",
+        "eventId": event.eventIdentifier ?? "",
+        "title": event.title ?? "",
+        "startDate": formatDate(event.startDate),
+        "endDate": formatDate(event.endDate),
+        "location": event.location ?? "",
+        "calendar": event.calendar?.title ?? "",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryEvents(arguments: Arguments) throws -> ToolOutput {
+  private func queryEvents(arguments: Arguments) throws -> GeneratedContent {
     let startDate = Date()
     let daysToQuery = arguments.daysAhead ?? 7
     let endDate = Calendar.current.date(byAdding: .day, value: daysToQuery, to: startDate)!
@@ -225,18 +223,16 @@ public struct CalendarTool: Tool {
       eventsDescription = "No events found in the next \(daysToQuery) days"
     }
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "count": events.count,
-        "daysQueried": daysToQuery,
-        "events": eventsDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Found \(events.count) event(s) in the next \(daysToQuery) days",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "count": events.count,
+      "daysQueried": daysToQuery,
+      "events": eventsDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+      "message": "Found \(events.count) event(s) in the next \(daysToQuery) days",
+    ])
   }
 
-  private func readEvent(eventId: String?) throws -> ToolOutput {
+  private func readEvent(eventId: String?) throws -> GeneratedContent {
     guard let id = eventId else {
       return createErrorOutput(error: CalendarError.missingEventId)
     }
@@ -249,26 +245,24 @@ public struct CalendarTool: Tool {
     dateFormatter.dateStyle = .full
     dateFormatter.timeStyle = .short
 
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "success",
-        "eventId": event.eventIdentifier ?? "",
-        "title": event.title ?? "",
-        "startDate": formatDate(event.startDate),
-        "endDate": formatDate(event.endDate),
-        "location": event.location ?? "",
-        "notes": event.notes ?? "",
-        "calendar": event.calendar?.title ?? "",
-        "isAllDay": event.isAllDay,
-        "url": event.url?.absoluteString ?? "",
-        "hasAlarms": !(event.alarms?.isEmpty ?? true),
-        "formattedDate":
-          "\(dateFormatter.string(from: event.startDate)) - \(dateFormatter.string(from: event.endDate))",
-      ])
-    )
+    return GeneratedContent(properties: [
+      "status": "success",
+      "eventId": event.eventIdentifier ?? "",
+      "title": event.title ?? "",
+      "startDate": formatDate(event.startDate),
+      "endDate": formatDate(event.endDate),
+      "location": event.location ?? "",
+      "notes": event.notes ?? "",
+      "calendar": event.calendar?.title ?? "",
+      "isAllDay": event.isAllDay,
+      "url": event.url?.absoluteString ?? "",
+      "hasAlarms": !(event.alarms?.isEmpty ?? true),
+      "formattedDate":
+        "\(dateFormatter.string(from: event.startDate)) - \(dateFormatter.string(from: event.endDate))",
+    ])
   }
 
-  private func updateEvent(arguments: Arguments) throws -> ToolOutput {
+  private func updateEvent(arguments: Arguments) throws -> GeneratedContent {
     guard let eventId = arguments.eventId else {
       return createErrorOutput(error: CalendarError.missingEventId)
     }
@@ -305,18 +299,16 @@ public struct CalendarTool: Tool {
     do {
       try eventStore.save(event, span: .thisEvent)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "message": "Event updated successfully",
-          "eventId": event.eventIdentifier ?? "",
-          "title": event.title ?? "",
-          "startDate": formatDate(event.startDate),
-          "endDate": formatDate(event.endDate),
-          "location": event.location ?? "",
-          "calendar": event.calendar?.title ?? "",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "message": "Event updated successfully",
+        "eventId": event.eventIdentifier ?? "",
+        "title": event.title ?? "",
+        "startDate": formatDate(event.startDate),
+        "endDate": formatDate(event.endDate),
+        "location": event.location ?? "",
+        "calendar": event.calendar?.title ?? "",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
@@ -336,14 +328,12 @@ public struct CalendarTool: Tool {
     return formatter.string(from: date)
   }
 
-  private func createErrorOutput(error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "error": error.localizedDescription,
-        "message": "Failed to perform calendar operation",
-      ])
-    )
+  private func createErrorOutput(error: Error) -> GeneratedContent {
+    return GeneratedContent(properties: [
+      "status": "error",
+      "error": error.localizedDescription,
+      "message": "Failed to perform calendar operation",
+    ])
   }
 }
 

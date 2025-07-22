@@ -54,7 +54,7 @@ public struct HealthTool: Tool {
 
   public init() {}
 
-  public func call(arguments: Arguments) async throws -> ToolOutput {
+  public func call(arguments: Arguments) async throws -> some PromptRepresentable {
     // Check if HealthKit is available
     guard HKHealthStore.isHealthDataAvailable() else {
       return createErrorOutput(error: HealthError.healthKitNotAvailable)
@@ -82,7 +82,7 @@ public struct HealthTool: Tool {
     }
   }
 
-  private func querySteps(arguments: Arguments) async -> ToolOutput {
+    private func querySteps(arguments: Arguments) async -> GeneratedContent {
     guard let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
       return createErrorOutput(error: HealthError.dataTypeNotAvailable)
     }
@@ -114,23 +114,21 @@ public struct HealthTool: Tool {
       let dateFormatter = DateFormatter()
       dateFormatter.dateStyle = .medium
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "steps",
-          "totalSteps": Int(steps),
-          "startDate": dateFormatter.string(from: startDate),
-          "endDate": dateFormatter.string(from: endDate),
-          "dailyAverage": Int(steps / Double(self.daysBetween(start: startDate, end: endDate))),
-          "message": "Total steps: \(Int(steps))",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "steps",
+        "totalSteps": Int(steps),
+        "startDate": dateFormatter.string(from: startDate),
+        "endDate": dateFormatter.string(from: endDate),
+        "dailyAverage": Int(steps / Double(self.daysBetween(start: startDate, end: endDate))),
+        "message": "Total steps: \(Int(steps))",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryHeartRate(arguments: Arguments) async -> ToolOutput {
+    private func queryHeartRate(arguments: Arguments) async -> GeneratedContent {
     guard let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
       return createErrorOutput(error: HealthError.dataTypeNotAvailable)
     }
@@ -179,24 +177,22 @@ public struct HealthTool: Tool {
       let min = heartRates.min() ?? 0
       let max = heartRates.max() ?? 0
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "heartRate",
-          "latestReading": latestReading,
-          "averageBPM": Int(average),
-          "minBPM": Int(min),
-          "maxBPM": Int(max),
-          "sampleCount": heartRates.count,
-          "message": "Average heart rate: \(Int(average)) bpm",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "heartRate",
+        "latestReading": latestReading,
+        "averageBPM": Int(average),
+        "minBPM": Int(min),
+        "maxBPM": Int(max),
+        "sampleCount": heartRates.count,
+        "message": "Average heart rate: \(Int(average)) bpm",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryWorkouts(arguments: Arguments) async -> ToolOutput {
+    private func queryWorkouts(arguments: Arguments) async -> GeneratedContent {
     let workoutType = HKObjectType.workoutType()
 
     // Request authorization
@@ -255,17 +251,15 @@ public struct HealthTool: Tool {
         workoutDescription += "\n"
       }
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "workouts",
-          "workoutCount": workouts.count,
-          "totalDurationMinutes": Int(totalDuration / 60),
-          "totalCalories": Int(totalCalories),
-          "workouts": workoutDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-          "message": "Found \(workouts.count) workout(s)",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "workouts",
+        "workoutCount": workouts.count,
+        "totalDurationMinutes": Int(totalDuration / 60),
+        "totalCalories": Int(totalCalories),
+        "workouts": workoutDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+        "message": "Found \(workouts.count) workout(s)",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
@@ -300,7 +294,7 @@ public struct HealthTool: Tool {
     }
   }
 
-  private func querySleep(arguments: Arguments) async -> ToolOutput {
+    private func querySleep(arguments: Arguments) async -> GeneratedContent {
     guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
       return createErrorOutput(error: HealthError.dataTypeNotAvailable)
     }
@@ -354,22 +348,20 @@ public struct HealthTool: Tool {
 
       let avgSleepHours = (totalSleepTime / Double(sleepByDay.count)) / 3600
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "sleep",
-          "averageSleepHours": String(format: "%.1f", avgSleepHours),
-          "totalNights": sleepByDay.count,
-          "sleepData": sleepDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-          "message": "Average sleep: \(String(format: "%.1f", avgSleepHours)) hours per night",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "sleep",
+        "averageSleepHours": String(format: "%.1f", avgSleepHours),
+        "totalNights": sleepByDay.count,
+        "sleepData": sleepDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+        "message": "Average sleep: \(String(format: "%.1f", avgSleepHours)) hours per night",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryActiveEnergy(arguments: Arguments) async -> ToolOutput {
+    private func queryActiveEnergy(arguments: Arguments) async -> GeneratedContent {
     guard let energyType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) else {
       return createErrorOutput(error: HealthError.dataTypeNotAvailable)
     }
@@ -402,23 +394,21 @@ public struct HealthTool: Tool {
       let days = daysBetween(start: startDate, end: endDate)
       let dailyAverage = calories / Double(days)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "activeEnergy",
-          "totalCalories": Int(calories),
-          "dailyAverage": Int(dailyAverage),
-          "startDate": formatDate(startDate),
-          "endDate": formatDate(endDate),
-          "message": "Total active energy: \(Int(calories)) calories",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "activeEnergy",
+        "totalCalories": Int(calories),
+        "dailyAverage": Int(dailyAverage),
+        "startDate": formatDate(startDate),
+        "endDate": formatDate(endDate),
+        "message": "Total active energy: \(Int(calories)) calories",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
   }
 
-  private func queryDistance(arguments: Arguments) async -> ToolOutput {
+  private func queryDistance(arguments: Arguments) async -> GeneratedContent {
     guard let distanceType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)
     else {
       return createErrorOutput(error: HealthError.dataTypeNotAvailable)
@@ -454,18 +444,16 @@ public struct HealthTool: Tool {
       let days = daysBetween(start: startDate, end: endDate)
       let dailyAverage = kilometers / Double(days)
 
-      return ToolOutput(
-        GeneratedContent(properties: [
-          "status": "success",
-          "dataType": "distance",
-          "totalKilometers": String(format: "%.2f", kilometers),
-          "totalMiles": String(format: "%.2f", miles),
-          "dailyAverageKm": String(format: "%.2f", dailyAverage),
-          "startDate": formatDate(startDate),
-          "endDate": formatDate(endDate),
-          "message": "Total distance: \(String(format: "%.2f", kilometers)) km",
-        ])
-      )
+      return GeneratedContent(properties: [
+        "status": "success",
+        "dataType": "distance",
+        "totalKilometers": String(format: "%.2f", kilometers),
+        "totalMiles": String(format: "%.2f", miles),
+        "dailyAverageKm": String(format: ".$2f", dailyAverage),
+        "startDate": formatDate(startDate),
+        "endDate": formatDate(endDate),
+        "message": "Total distance: \(String(format: "%.2f", kilometers)) km",
+      ])
     } catch {
       return createErrorOutput(error: error)
     }
@@ -527,14 +515,12 @@ public struct HealthTool: Tool {
     }
   }
 
-  private func createErrorOutput(error: Error) -> ToolOutput {
-    return ToolOutput(
-      GeneratedContent(properties: [
-        "status": "error",
-        "error": error.localizedDescription,
-        "message": "Failed to access health data",
-      ])
-    )
+  private func createErrorOutput(error: Error) -> GeneratedContent {
+    GeneratedContent(properties: [
+      "status": "error",
+      "error": error.localizedDescription,
+      "message": "Failed to access health data",
+    ])
   }
 }
 
