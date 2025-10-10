@@ -101,26 +101,17 @@ public struct LocationTool: Tool {
   }
 
   private func getCurrentLocation() async -> GeneratedContent {
-    // Check authorization status
-    let authStatus = locationManager.authorizationStatus
-
-    #if os(visionOS)
-      guard authStatus == .authorizedWhenInUse else {
-        if authStatus == .notDetermined {
-          // Request permission and wait for response
-          return await requestLocationPermission()
-        }
-        return createErrorOutput(error: LocationError.authorizationDenied)
+    // Check authorization status using the centralized method
+    let authResult = checkLocationAuthorization()
+    
+    if !authResult.isAuthorized {
+      // If permission is not determined, request it
+      if locationManager.authorizationStatus == .notDetermined {
+        return await requestLocationPermission()
       }
-    #else
-      guard authStatus == .authorizedAlways else {
-        if authStatus == .notDetermined {
-          // Request permission and wait for response
-          return await requestLocationPermission()
-        }
-        return createErrorOutput(error: LocationError.authorizationDenied)
-      }
-    #endif
+      // Return the appropriate error or permission request result
+      return authResult.result ?? createErrorOutput(error: LocationError.authorizationDenied)
+    }
 
     // Get current location
     guard let location = locationManager.location else {
@@ -406,6 +397,42 @@ public struct LocationTool: Tool {
       "error": error.localizedDescription,
       "message": "Failed to perform location operation",
     ])
+  }
+  
+  /// Checks if location authorization is sufficient for the current platform
+  /// - Returns: A tuple with authorization status and whether location access is available
+  private func checkLocationAuthorization() -> (isAuthorized: Bool, result: GeneratedContent?) {
+    let authStatus = locationManager.authorizationStatus
+    
+    #if os(visionOS)
+      if authStatus == .authorizedWhenInUse {
+        return (true, nil)
+      }
+    #elseif os(iOS) || os(visionOS)
+      if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
+        return (true, nil)
+      }
+    #elseif os(macOS)
+      if authStatus == .authorizedAlways {
+        return (true, nil)
+      }
+    #else
+      if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
+        return (true, nil)
+      }
+    #endif
+    
+    // Handle not determined status
+    if authStatus == .notDetermined {
+      return (false, GeneratedContent(properties: [
+        "status": "permission_requested",
+        "message": "Location permission requested. Please allow location access in the system alert and try again.",
+        "instruction": "After granting permission, please run this tool again to get your location.",
+      ]))
+    }
+    
+    // Permission denied
+    return (false, createErrorOutput(error: LocationError.authorizationDenied))
   }
 }
 
