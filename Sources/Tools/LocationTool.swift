@@ -383,27 +383,27 @@ public struct LocationTool: Tool {
   }
 
   private func requestLocationPermission() async -> GeneratedContent {
-    // Create a location delegate to handle authorization changes
-    let delegate = LocationDelegate()
-    locationManager.delegate = delegate
+    let permissionRequester = PermissionRequester()
+    locationManager.delegate = permissionRequester
 
-    // Request permission
     #if os(macOS)
-      // On macOS, just start monitoring which will trigger permission dialog
       locationManager.startUpdatingLocation()
       locationManager.stopUpdatingLocation()
     #else
       locationManager.requestWhenInUseAuthorization()
     #endif
 
-    // Return informative message
-    return GeneratedContent(properties: [
-      "status": "permission_requested",
-      "message":
-        "Location permission requested. Please allow location access in the system alert and try again.",
-      "instruction":
-        "After granting permission, please run this tool again to get your location.",
-    ])
+    // Wait for authorization response
+    await permissionRequester.waitForAuthorizationResponse()
+    
+    // Check the new authorization status
+    let authorization = await checkLocationAuthorization()
+    if authorization.isAuthorized {
+      // Permission granted, try to get location
+      return await getCurrentLocation()
+    } else {
+      return createErrorOutput(error: LocationError.authorizationDenied)
+    }
   }
 
   private func createErrorOutput(error: Error) -> GeneratedContent {
@@ -639,19 +639,20 @@ enum LocationError: Error, LocalizedError {
   }
 }
 
-// Location delegate to handle authorization changes
-class LocationDelegate: NSObject, CLLocationManagerDelegate {
-  func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-    // This will be called when authorization status changes
+final class PermissionRequester: NSObject, CLLocationManagerDelegate {
+  private let authorizationUpdated = AsyncStream<Void>.makeStream()
+
+  func waitForAuthorizationResponse() async {
+    for await _ in authorizationUpdated.stream {
+      break
+    }
   }
 
-  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    // Required delegate method for requestLocation()
-    // We don't need to do anything here as we're just requesting permission
-  }
-
-  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    // Handle location errors
-    print("Location error: \(error.localizedDescription)")
+  nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    let continuation = self.authorizationUpdated.continuation
+    Task { @MainActor in
+      continuation.yield()
+      continuation.finish()
+    }
   }
 }
