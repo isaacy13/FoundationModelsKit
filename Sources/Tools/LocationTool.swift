@@ -80,7 +80,6 @@ public struct LocationTool: Tool {
   }
 
   private let locationManager = CLLocationManager()
-  @MainActor private lazy var currentLocationFetcher = CurrentLocationFetcher()
 
   public init() {
     locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -142,7 +141,8 @@ public struct LocationTool: Tool {
 
   @MainActor
   private func requestLiveLocation(timeout: TimeInterval = 8) async throws -> CLLocation {
-    try await currentLocationFetcher.requestLocation(using: locationManager, timeout: timeout)
+    let fetcher = CurrentLocationFetcher()
+    return try await fetcher.requestLocation(using: locationManager, timeout: timeout)
   }
 
   private func buildCurrentLocationContent(
@@ -150,7 +150,7 @@ public struct LocationTool: Tool {
     source: LocationResultSource
   ) async -> GeneratedContent {
     let mapItem = await reverseGeocode(location: location)
-    let details = addressDetails(from: mapItem, fallbackLocation: location)
+    let address = formatAddress(from: mapItem, fallbackLocation: location)
 
     return GeneratedContent(properties: [
       "status": "success",
@@ -160,14 +160,8 @@ public struct LocationTool: Tool {
       "altitude": location.altitude,
       "accuracy": location.horizontalAccuracy,
       "timestamp": formatDate(location.timestamp),
-      "address": details.displayName,
-      "message": source.message(for: details.displayName),
-      "street": details.street ?? "",
-      "city": details.city ?? "",
-      "region": details.region ?? "",
-      "postalCode": details.postalCode ?? "",
-      "country": details.country ?? "",
-      "isoCountryCode": details.isoCountryCode ?? "",
+      "address": address,
+      "message": source.message(for: address),
       "note": source.note ?? "",
     ])
   }
@@ -195,7 +189,7 @@ public struct LocationTool: Tool {
         return createErrorOutput(error: LocationError.geocodingFailed)
       }
 
-      let details = addressDetails(from: mapItem, fallbackLocation: mapItem.location)
+      let formattedAddress = formatAddress(from: mapItem, fallbackLocation: mapItem.location)
       let location = mapItem.location
 
       return GeneratedContent(properties: [
@@ -203,14 +197,8 @@ public struct LocationTool: Tool {
         "query": address,
         "latitude": location.coordinate.latitude,
         "longitude": location.coordinate.longitude,
-        "formattedAddress": details.displayName,
-        "country": details.country ?? "",
-        "state": details.region ?? "",
-        "city": details.city ?? "",
-        "street": details.street ?? "",
-        "postalCode": details.postalCode ?? "",
-        "isoCountryCode": details.isoCountryCode ?? "",
-        "message": "Location found: \(details.displayName)",
+        "formattedAddress": formattedAddress,
+        "message": "Location found: \(formattedAddress)",
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -236,20 +224,13 @@ public struct LocationTool: Tool {
         return createErrorOutput(error: LocationError.reverseGeocodingFailed)
       }
 
-      let details = addressDetails(from: mapItem, fallbackLocation: location)
-      let address = details.displayName
+      let address = formatAddress(from: mapItem, fallbackLocation: location)
 
       return GeneratedContent(properties: [
         "status": "success",
         "latitude": latitude,
         "longitude": longitude,
         "address": address,
-        "country": details.country ?? "",
-        "state": details.region ?? "",
-        "city": details.city ?? "",
-        "street": details.street ?? "",
-        "postalCode": details.postalCode ?? "",
-        "isoCountryCode": details.isoCountryCode ?? "",
         "message": "Address: \(address)",
       ])
     } catch {
@@ -296,9 +277,7 @@ public struct LocationTool: Tool {
         }
 
         placesDescription += "\(index + 1). \(item.name ?? "Unknown Place")\n"
-        if let address = formatMapItemAddress(item) {
-          placesDescription += "   Address: \(address)\n"
-        }
+        placesDescription += "   Address: \(formatMapItemAddress(item))\n"
         placesDescription += "   Distance: \(distance)\n"
         if let phone = item.phoneNumber {
           placesDescription += "   Phone: \(phone)\n"
@@ -356,8 +335,8 @@ public struct LocationTool: Tool {
     ])
   }
 
-  private func formatAddress(mapItem: MKMapItem?) -> String {
-    addressDetails(from: mapItem, fallbackLocation: mapItem?.location).displayName
+  private func formatMapItemAddress(_ mapItem: MKMapItem?) -> String {
+    formatAddress(from: mapItem, fallbackLocation: mapItem?.location)
   }
 
   private func formatDistance(_ meters: Double) -> String {
@@ -512,15 +491,7 @@ private enum LocationResultSource {
   }
 }
 
-private struct AddressDetails {
-  let displayName: String
-  let street: String?
-  let city: String?
-  let region: String?
-  let postalCode: String?
-  let country: String?
-  let isoCountryCode: String?
-}
+// AddressDetails struct removed - now using String directly
 
 @MainActor
 final class CurrentLocationFetcher: NSObject, @MainActor CLLocationManagerDelegate {
@@ -594,73 +565,16 @@ final class CurrentLocationFetcher: NSObject, @MainActor CLLocationManagerDelega
   }
 }
 
-private func addressDetails(
+private func formatAddress(
   from mapItem: MKMapItem?,
   fallbackLocation: CLLocation?
-) -> AddressDetails {
-  guard let placemark = mapItem?.placemark else {
-    if let location = fallbackLocation {
-      return AddressDetails(
-        displayName: coordinateDescription(for: location),
-        street: nil,
-        city: nil,
-        region: nil,
-        postalCode: nil,
-        country: nil,
-        isoCountryCode: nil
-      )
-    }
-
-    return AddressDetails(
-      displayName: "Unknown location",
-      street: nil,
-      city: nil,
-      region: nil,
-      postalCode: nil,
-      country: nil,
-      isoCountryCode: nil
-    )
+) -> String {
+  guard let mapItem else {
+    return fallbackLocation.map(coordinateDescription) ?? "Unknown location"
   }
 
-  let streetComponents = [placemark.subThoroughfare, placemark.thoroughfare]
-    .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-    .filter { !$0.isEmpty }
-  let street =
-    streetComponents.isEmpty ? nil : streetComponents.joined(separator: " ").trimmingCharacters(in: .whitespaces)
-
-  let city = placemark.locality?.trimmingCharacters(in: .whitespacesAndNewlines)
-  let region = (placemark.administrativeArea ?? placemark.subAdministrativeArea)?
-    .trimmingCharacters(in: .whitespacesAndNewlines)
-  let postalCode = placemark.postalCode?.trimmingCharacters(in: .whitespacesAndNewlines)
-  let country = placemark.country?.trimmingCharacters(in: .whitespacesAndNewlines)
-  let isoCountryCode = placemark.isoCountryCode?.trimmingCharacters(in: .whitespacesAndNewlines)
-
-  var components: [String] = []
-  if let street { components.append(street) }
-  if let city, !city.isEmpty { components.append(city) }
-  if let region, !region.isEmpty { components.append(region) }
-  if let country, !country.isEmpty { components.append(country) }
-
-  var displayName = components.joined(separator: ", ")
-  if displayName.isEmpty {
-    if let name = mapItem?.name, !name.isEmpty {
-      displayName = name
-    } else if let location = fallbackLocation {
-      displayName = coordinateDescription(for: location)
-    } else {
-      displayName = "Unknown location"
-    }
-  }
-
-  return AddressDetails(
-    displayName: displayName,
-    street: street,
-    city: city,
-    region: region,
-    postalCode: postalCode,
-    country: country,
-    isoCountryCode: isoCountryCode
-  )
+  // Use the new MKAddress instead of deprecated placemark
+  return mapItem.address?.fullAddress ?? mapItem.name ?? "Unknown location"
 }
 
 private func coordinateDescription(for location: CLLocation) -> String {
@@ -673,7 +587,7 @@ private func coordinateDescription(for location: CLLocation) -> String {
 
 // Helper function to format map item address
 private func formatMapItemAddress(_ mapItem: MKMapItem) -> String? {
-  addressDetails(from: mapItem, fallbackLocation: mapItem.location).displayName
+  formatAddress(from: mapItem, fallbackLocation: mapItem.location)
 }
 
 extension Double {
