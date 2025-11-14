@@ -9,6 +9,17 @@
 import Foundation
 import FoundationModels
 
+// MARK: - Constants
+
+/// Apple's guidance: approximately 4.5 characters per token
+private let charactersPerToken = 4.5
+
+/// Safety buffer multiplier for conservative token estimates (25%)
+private let safetyBufferMultiplier = 0.25
+
+/// System overhead in tokens for context window calculations
+private let systemOverheadTokens = 100
+
 // MARK: - Token Counting Extensions
 
 extension Transcript.Entry {
@@ -101,8 +112,8 @@ extension Transcript {
   /// ```
   public var safeEstimatedTokenCount: Int {
     let baseTokens = estimatedTokenCount
-    let buffer = Int(Double(baseTokens) * 0.25)
-    let systemOverhead = 100
+    let buffer = Int(Double(baseTokens) * safetyBufferMultiplier)
+    let systemOverhead = systemOverheadTokens
 
     return baseTokens + buffer + systemOverhead
   }
@@ -163,11 +174,12 @@ extension Transcript {
       return true
     }
 
+    let insertionIndex = result.isEmpty ? 0 : 1
     for entry in nonInstructionEntries.reversed() {
       let entryTokens = entry.estimatedTokenCount
       if tokenCount + entryTokens > budget { break }
 
-      result.insert(entry, at: result.count)
+      result.insert(entry, at: insertionIndex)
       tokenCount += entryTokens
     }
 
@@ -191,7 +203,7 @@ public func estimateTokens(from text: String) -> Int {
   guard !text.isEmpty else { return 0 }
 
   let characterCount = text.count
-  let tokensPerChar = 1.0 / 4.5
+  let tokensPerChar = 1.0 / charactersPerToken
 
   return max(1, Int(ceil(Double(characterCount) * tokensPerChar)))
 }
@@ -209,7 +221,7 @@ public func estimateTokens(from text: String) -> Int {
 public func estimateTokens(from content: GeneratedContent) -> Int {
   let jsonString = content.jsonString
   let characterCount = jsonString.count
-  let tokensPerChar = 1.0 / 4.5
+  let tokensPerChar = 1.0 / charactersPerToken
 
   return max(1, Int(ceil(Double(characterCount) * tokensPerChar)))
 }

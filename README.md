@@ -733,7 +733,7 @@ class ChatManager {
     private let maxTokens = 4096
     private let threshold = 0.7
 
-    func addMessage(_ message: String) async throws {
+    func addMessage(_ message: String) async throws -> String {
         // Add user message
         transcript.append(.prompt(message))
 
@@ -750,6 +750,8 @@ class ChatManager {
         let session = LanguageModelSession(model: .instant)
         let response = try await session.generate(from: transcript)
         transcript.append(.response(response))
+
+        return response.text
     }
 }
 ```
