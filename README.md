@@ -1,6 +1,6 @@
-# Foundation Models Tools
+# FoundationModelsKit
 
-A collection of tools for Apple's Foundation Models Framework that enable you to interact with system frameworks and external services.
+A collection of tools and utilities for Apple's Foundation Models Framework that help working with the language model, better.
 
 ## Table of Contents
 
