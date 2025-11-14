@@ -732,9 +732,11 @@ class ChatManager {
     private var transcript = Transcript()
     private let maxTokens = 4096
     private let threshold = 0.7
+    private let session: LanguageModelSession
 
     init(systemInstructions: String) {
         transcript = Transcript([.instructions(systemInstructions)])
+        session = LanguageModelSession(model: .instant)
     }
 
     func addMessage(_ message: String) async throws -> String {
@@ -751,7 +753,6 @@ class ChatManager {
         }
 
         // Generate response with managed context
-        let session = LanguageModelSession(model: .instant)
         let response = try await session.generate(from: transcript)
         transcript.append(.response(response))
 
