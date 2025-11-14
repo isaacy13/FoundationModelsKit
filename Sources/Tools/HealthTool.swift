@@ -121,7 +121,7 @@ public struct HealthTool: Tool {
         "startDate": dateFormatter.string(from: startDate),
         "endDate": dateFormatter.string(from: endDate),
         "dailyAverage": Int(steps / Double(self.daysBetween(start: startDate, end: endDate))),
-        "message": "Total steps: \(Int(steps))",
+        "message": "Total steps: \(Int(steps))"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -185,7 +185,7 @@ public struct HealthTool: Tool {
         "minBPM": Int(min),
         "maxBPM": Int(max),
         "sampleCount": heartRates.count,
-        "message": "Average heart rate: \(Int(average)) bpm",
+        "message": "Average heart rate: \(Int(average)) bpm"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -258,7 +258,7 @@ public struct HealthTool: Tool {
         "totalDurationMinutes": Int(totalDuration / 60),
         "totalCalories": Int(totalCalories),
         "workouts": workoutDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Found \(workouts.count) workout(s)",
+        "message": "Found \(workouts.count) workout(s)"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -354,7 +354,7 @@ public struct HealthTool: Tool {
         "averageSleepHours": String(format: "%.1f", avgSleepHours),
         "totalNights": sleepByDay.count,
         "sleepData": sleepDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Average sleep: \(String(format: "%.1f", avgSleepHours)) hours per night",
+        "message": "Average sleep: \(String(format: "%.1f", avgSleepHours)) hours per night"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -401,7 +401,7 @@ public struct HealthTool: Tool {
         "dailyAverage": Int(dailyAverage),
         "startDate": formatDate(startDate),
         "endDate": formatDate(endDate),
-        "message": "Total active energy: \(Int(calories)) calories",
+        "message": "Total active energy: \(Int(calories)) calories"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -452,7 +452,7 @@ public struct HealthTool: Tool {
         "dailyAverageKm": String(format: ".$2f", dailyAverage),
         "startDate": formatDate(startDate),
         "endDate": formatDate(endDate),
-        "message": "Total distance: \(String(format: "%.2f", kilometers)) km",
+        "message": "Total distance: \(String(format: "%.2f", kilometers)) km"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -464,8 +464,7 @@ public struct HealthTool: Tool {
     let endDate = Date()
 
     if let startDateString = arguments.startDate,
-      let parsedStartDate = parseDate(startDateString)
-    {
+      let parsedStartDate = parseDate(startDateString) {
       let parsedEndDate = arguments.endDate.flatMap { parseDate($0) } ?? endDate
       return (parsedStartDate, parsedEndDate)
     }
@@ -519,7 +518,7 @@ public struct HealthTool: Tool {
     GeneratedContent(properties: [
       "status": "error",
       "error": error.localizedDescription,
-      "message": "Failed to access health data",
+      "message": "Failed to access health data"
     ])
   }
 }

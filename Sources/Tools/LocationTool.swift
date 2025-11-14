@@ -162,7 +162,7 @@ public struct LocationTool: Tool {
       "timestamp": formatDate(location.timestamp),
       "address": address,
       "message": source.message(for: address),
-      "note": source.note ?? "",
+      "note": source.note ?? ""
     ])
   }
 
@@ -198,7 +198,7 @@ public struct LocationTool: Tool {
         "latitude": location.coordinate.latitude,
         "longitude": location.coordinate.longitude,
         "formattedAddress": formattedAddress,
-        "message": "Location found: \(formattedAddress)",
+        "message": "Location found: \(formattedAddress)"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -231,7 +231,7 @@ public struct LocationTool: Tool {
         "latitude": latitude,
         "longitude": longitude,
         "address": address,
-        "message": "Address: \(address)",
+        "message": "Address: \(address)"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -294,7 +294,7 @@ public struct LocationTool: Tool {
         "query": query,
         "resultCount": response.mapItems.count,
         "places": placesDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Found \(response.mapItems.count) place(s)",
+        "message": "Found \(response.mapItems.count) place(s)"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -331,7 +331,7 @@ public struct LocationTool: Tool {
       "formattedDistance": formatDistance(distance),
       "bearing": bearing,
       "direction": direction,
-      "message": "Distance: \(formatDistance(distance)) \(direction)",
+      "message": "Distance: \(formatDistance(distance)) \(direction)"
     ])
   }
 
@@ -369,7 +369,7 @@ public struct LocationTool: Tool {
   private func compassDirection(from bearing: Double) -> String {
     let directions = [
       "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-      "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+      "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
     ]
     let index = Int((bearing + 11.25) / 22.5) % 16
     return directions[index]
@@ -395,7 +395,7 @@ public struct LocationTool: Tool {
 
     // Wait for authorization response
     await permissionRequester.waitForAuthorizationResponse()
-    
+
     // Check the new authorization status
     let authorization = await checkLocationAuthorization()
     if authorization.isAuthorized {
@@ -410,10 +410,10 @@ public struct LocationTool: Tool {
     return GeneratedContent(properties: [
       "status": "error",
       "error": error.localizedDescription,
-      "message": "Failed to perform location operation",
+      "message": "Failed to perform location operation"
     ])
   }
-  
+
   /// Checks if location authorization is sufficient for the current platform
   @MainActor
   private func checkLocationAuthorization() -> AuthorizationResult {

@@ -118,7 +118,7 @@ public struct ContactsTool: Tool {
             CNContactEmailAddressesKey as CNKeyDescriptor,
             CNContactPhoneNumbersKey as CNKeyDescriptor,
             CNContactOrganizationNameKey as CNKeyDescriptor,
-            CNContactIdentifierKey as CNKeyDescriptor,
+            CNContactIdentifierKey as CNKeyDescriptor
         ]
 
         let predicate = CNContact.predicateForContacts(matchingName: searchQuery)
@@ -135,16 +135,12 @@ public struct ContactsTool: Tool {
 
                 let filteredContacts = allContacts.filter { contact in
                     // Check emails
-                    for email in contact.emailAddresses {
-                        if email.value.contains(searchQuery) {
-                            return true
-                        }
+                    for email in contact.emailAddresses where email.value.contains(searchQuery) {
+                        return true
                     }
                     // Check phone numbers
-                    for phone in contact.phoneNumbers {
-                        if phone.value.stringValue.contains(searchQuery) {
-                            return true
-                        }
+                    for phone in contact.phoneNumbers where phone.value.stringValue.contains(searchQuery) {
+                        return true
                     }
                     return false
                 }
@@ -171,7 +167,7 @@ public struct ContactsTool: Tool {
             CNContactOrganizationNameKey as CNKeyDescriptor,
             CNContactPostalAddressesKey as CNKeyDescriptor,
             CNContactBirthdayKey as CNKeyDescriptor,
-            CNContactNoteKey as CNKeyDescriptor,
+            CNContactNoteKey as CNKeyDescriptor
         ]
 
         do {
@@ -196,7 +192,7 @@ public struct ContactsTool: Tool {
                 "phoneNumbers": contact.phoneNumbers.map { $0.value.stringValue },
                 "addresses": addresses,
                 "birthday": contact.birthday?.date?.description ?? "",
-                "note": contact.note,
+                "note": contact.note
             ])
         } catch {
             return createErrorOutput(error: error)
@@ -247,7 +243,7 @@ public struct ContactsTool: Tool {
                     in: .whitespaces),
                 "email": arguments.email ?? "",
                 "phoneNumber": arguments.phoneNumber ?? "",
-                "organization": arguments.organization ?? "",
+                "organization": arguments.organization ?? ""
             ])
 
         } catch {
@@ -276,7 +272,7 @@ public struct ContactsTool: Tool {
             "query": query,
             "count": contacts.count,
             "results": contactsDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-            "message": "Found \(contacts.count) contact(s) matching '\(query)'",
+            "message": "Found \(contacts.count) contact(s) matching '\(query)'"
         ])
     }
 
@@ -284,7 +280,7 @@ public struct ContactsTool: Tool {
         GeneratedContent(properties: [
             "status": "error",
             "error": error.localizedDescription,
-            "message": "Failed to perform contact operation",
+            "message": "Failed to perform contact operation"
         ])
     }
 }

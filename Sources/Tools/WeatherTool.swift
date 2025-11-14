@@ -4,7 +4,8 @@
 //
 //  Created by Rudrank Riyam on 6/9/25.
 //
-//  This file defines the WeatherTool, a utility for retrieving real-time weather information for cities using the OpenMeteo API.
+//  This file defines the WeatherTool, a utility for retrieving real-time weather
+//  information for cities using the OpenMeteo API.
 //  The tool provides temperature, humidity, wind speed, and other weather metrics for a given city.
 //
 
@@ -13,17 +14,19 @@ import Foundation
 import FoundationModels
 import MapKit
 
-/// `WeatherTool` is a utility that provides real-time weather information for cities using the OpenMeteo API.
+/// `WeatherTool` is a utility that provides real-time weather information for cities
+/// using the OpenMeteo API.
 ///
-/// This tool fetches the latest weather data, including temperature, humidity, wind speed, and more, for a specified city.
-/// It uses geocoding to resolve city names to coordinates and then queries the OpenMeteo API for current weather conditions.
+/// This tool fetches the latest weather data, including temperature, humidity, wind speed,
+/// and more, for a specified city. It uses geocoding to resolve city names to coordinates
+/// and then queries the OpenMeteo API for current weather conditions.
 public struct WeatherTool: Tool {
 
   /// The name of the tool, used for identification.
   public let name = "getWeather"
   /// A brief description of the tool's functionality.
   public let description = "Retrieve the latest weather information for a city using OpenMeteo API"
-  
+
   /// Public initializer for WeatherTool
   public init() {}
 
@@ -33,14 +36,14 @@ public struct WeatherTool: Tool {
     @Guide(
       description: "The city to get weather information for (e.g., 'New York', 'London', 'Tokyo')")
     public var city: String
-    
+
     // Public initializer
     public init(city: String) {
       self.city = city
     }
-    
+
     // MARK: - Generable conformance
-    
+
     // ConvertibleToGeneratedContent conformance
     nonisolated public var generatedContent: GeneratedContent {
       GeneratedContent(
@@ -49,31 +52,31 @@ public struct WeatherTool: Tool {
         ]
       )
     }
-    
+
     // ConvertibleFromGeneratedContent conformance
     nonisolated public init(_ content: GeneratedContent) throws {
       self.city = try content.value(String.self, forProperty: "city")
     }
-    
+
     // GenerationSchemaConformant conformance
     nonisolated public static var generationSchema: GenerationSchema {
       GenerationSchema(
         type: Self.self,
         properties: [
           GenerationSchema.Property(
-            name: "city", 
-            description: "The city to get weather information for (e.g., 'New York', 'London', 'Tokyo')", 
+            name: "city",
+            description: "The city to get weather information for (e.g., 'New York', 'London', 'Tokyo')",
             type: String.self
           )
         ]
       )
     }
-    
+
     // PartiallyGenerated nested type
     public struct PartiallyGenerated: Identifiable, ConvertibleFromGeneratedContent, Sendable {
       public var id: GenerationID
       public var city: String.PartiallyGenerated?
-      
+
       nonisolated public init(_ content: GeneratedContent) throws {
         self.id = content.id ?? GenerationID()
         self.city = try content.value(forProperty: "city")
@@ -147,7 +150,7 @@ public struct WeatherTool: Tool {
 
   private func getCoordinates(for city: String) async throws -> CLLocationCoordinate2D {
     guard let request = MKGeocodingRequest(addressString: city) else { throw WeatherError.locationNotFound }
-    
+
     let mapItems = try await request.mapItems
     guard let mapItem = mapItems.first else {
       throw WeatherError.locationNotFound
@@ -169,8 +172,9 @@ public struct WeatherTool: Tool {
       URLQueryItem(
         name: "current",
         value:
-          "temperature_2m,relative_humidity_2m,apparent_temperature,surface_pressure,precipitation,windspeed_10m,weathercode"
-      ),
+          "temperature_2m,relative_humidity_2m,apparent_temperature," +
+          "surface_pressure,precipitation,windspeed_10m,weathercode"
+      )
     ]
 
     guard let url = components?.url else {
@@ -230,7 +234,7 @@ public struct WeatherTool: Tool {
       "feelsLike": weatherData.feelsLike,
       "pressure": weatherData.pressure,
       "precipitation": weatherData.precipitation,
-      "unit": weatherData.unit,
+      "unit": weatherData.unit
     ])
   }
 
@@ -245,7 +249,7 @@ public struct WeatherTool: Tool {
       "feelsLike": 0,
       "pressure": 0,
       "precipitation": 0,
-      "unit": "Celsius",
+      "unit": "Celsius"
     ])
   }
 }
