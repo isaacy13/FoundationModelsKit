@@ -132,8 +132,7 @@ public struct RemindersTool: Tool {
     }
 
     if let dueDateString = arguments.dueDate,
-      let dueDate = parseDate(dueDateString)
-    {
+      let dueDate = parseDate(dueDateString) {
       reminder.dueDateComponents = Calendar.current.dateComponents(
         [.year, .month, .day, .hour, .minute],
         from: dueDate
@@ -176,7 +175,7 @@ public struct RemindersTool: Tool {
         "title": reminder.title ?? "",
         "list": reminder.calendar?.title ?? "",
         "dueDate": formatDateComponents(reminder.dueDateComponents),
-        "priority": getPriorityString(reminder.priority),
+        "priority": getPriorityString(reminder.priority)
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -227,8 +226,7 @@ public struct RemindersTool: Tool {
 
       // Then by due date
       if let date1 = reminder1.dueDateComponents?.date,
-        let date2 = reminder2.dueDateComponents?.date
-      {
+        let date2 = reminder2.dueDateComponents?.date {
         return date1 < date2
       }
 
@@ -271,7 +269,7 @@ public struct RemindersTool: Tool {
       "filter": filter,
       "count": reminders.count,
       "reminders": remindersDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-      "message": "Found \(reminders.count) reminder(s)",
+      "message": "Found \(reminders.count) reminder(s)"
     ])
   }
 
@@ -295,7 +293,7 @@ public struct RemindersTool: Tool {
         "message": "Reminder completed successfully",
         "reminderId": reminder.calendarItemIdentifier,
         "title": reminder.title ?? "",
-        "completedAt": formatDate(Date()),
+        "completedAt": formatDate(Date())
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -354,7 +352,7 @@ public struct RemindersTool: Tool {
         "title": reminder.title ?? "",
         "list": reminder.calendar?.title ?? "",
         "dueDate": formatDateComponents(reminder.dueDateComponents),
-        "priority": getPriorityString(reminder.priority),
+        "priority": getPriorityString(reminder.priority)
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -378,7 +376,7 @@ public struct RemindersTool: Tool {
       return GeneratedContent(properties: [
         "status": "success",
         "message": "Reminder deleted successfully",
-        "deletedTitle": title,
+        "deletedTitle": title
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -396,7 +394,7 @@ public struct RemindersTool: Tool {
       "yyyy-MM-dd",  // Date only: 2025-01-15 (defaults to start of day)
       "MM/dd/yyyy HH:mm:ss",  // US format: 01/15/2025 17:00:00
       "MM/dd/yyyy HH:mm",  // US format without seconds: 01/15/2025 17:00
-      "MM/dd/yyyy",  // US date only: 01/15/2025
+      "MM/dd/yyyy"  // US date only: 01/15/2025
     ]
 
     for format in formats {
@@ -449,7 +447,7 @@ public struct RemindersTool: Tool {
     return GeneratedContent(properties: [
       "status": "error",
       "error": error.localizedDescription,
-      "message": "Failed to perform reminder operation",
+      "message": "Failed to perform reminder operation"
     ])
   }
 }

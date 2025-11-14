@@ -156,7 +156,7 @@ public struct MusicTool: Tool {
         "query": query,
         "resultCount": response.songs.count + response.artists.count + response.albums.count,
         "results": resultDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-        "message": "Found music matching '\(query)'",
+        "message": "Found music matching '\(query)'"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -181,7 +181,7 @@ public struct MusicTool: Tool {
             "status": "success",
             "action": "play",
             "nowPlaying": "\(song.title) by \(song.artistName)",
-            "message": "Now playing: \(song.title)",
+            "message": "Now playing: \(song.title)"
           ])
         } else {
           return createErrorOutput(error: MusicError.itemNotFound)
@@ -200,7 +200,7 @@ public struct MusicTool: Tool {
             "status": "success",
             "action": "play",
             "nowPlaying": "\(song.title) by \(song.artistName)",
-            "message": "Now playing: \(song.title)",
+            "message": "Now playing: \(song.title)"
           ])
         } else {
           return createErrorOutput(error: MusicError.noResults)
@@ -211,7 +211,7 @@ public struct MusicTool: Tool {
         return GeneratedContent(properties: [
           "status": "success",
           "action": "resume",
-          "message": "Playback resumed",
+          "message": "Playback resumed"
         ])
       }
     } catch {
@@ -226,7 +226,7 @@ public struct MusicTool: Tool {
     return GeneratedContent(properties: [
       "status": "success",
       "action": "pause",
-      "message": "Playback paused",
+      "message": "Playback paused"
     ])
   }
 
@@ -238,7 +238,7 @@ public struct MusicTool: Tool {
       return GeneratedContent(properties: [
         "status": "success",
         "action": "next",
-        "message": "Skipped to next song",
+        "message": "Skipped to next song"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -253,7 +253,7 @@ public struct MusicTool: Tool {
       return GeneratedContent(properties: [
         "status": "success",
         "action": "previous",
-        "message": "Skipped to previous song",
+        "message": "Skipped to previous song"
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -266,7 +266,7 @@ public struct MusicTool: Tool {
     guard let nowPlaying = player.queue.currentEntry else {
       return GeneratedContent(properties: [
         "status": "success",
-        "message": "No song currently playing",
+        "message": "No song currently playing"
       ])
     }
 
@@ -280,7 +280,7 @@ public struct MusicTool: Tool {
           "title": song.title,
           "artist": song.artistName,
           "album": album,
-          "message": "Currently playing: \(song.title) by \(song.artistName)",
+          "message": "Currently playing: \(song.title) by \(song.artistName)"
         ])
       } else {
         return GeneratedContent(properties: [
@@ -289,7 +289,7 @@ public struct MusicTool: Tool {
           "playbackState": String(describing: player.state.playbackStatus),
           "title": song.title,
           "artist": song.artistName,
-          "message": "Currently playing: \(song.title) by \(song.artistName)",
+          "message": "Currently playing: \(song.title) by \(song.artistName)"
         ])
       }
     } else if let item = nowPlaying.item {
@@ -297,19 +297,19 @@ public struct MusicTool: Tool {
         "status": "success",
         "id": item.id.rawValue,
         "playbackState": String(describing: player.state.playbackStatus),
-        "message": "Currently playing: \(item.id)",
+        "message": "Currently playing: \(item.id)"
       ])
     } else if let transientItem = nowPlaying.transientItem {
       // Handle transient items
       return GeneratedContent(properties: [
         "status": "success",
         "message": "Loading: \(transientItem.id)",
-        "isTransient": true,
+        "isTransient": true
       ])
     } else {
       return GeneratedContent(properties: [
         "status": "success",
-        "message": "Unknown playback state",
+        "message": "Unknown playback state"
       ])
     }
   }
@@ -324,7 +324,7 @@ public struct MusicTool: Tool {
     return GeneratedContent(properties: [
       "status": "error",
       "error": error.localizedDescription,
-      "message": "Failed to perform music operation",
+      "message": "Failed to perform music operation"
     ])
   }
 }

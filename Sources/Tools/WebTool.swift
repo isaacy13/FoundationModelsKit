@@ -172,7 +172,7 @@ public struct WebTool: Tool {
       "abstractSource": searchData.abstractSource,
       "relatedTopicsCount": searchData.relatedTopics.count,
       "summary": searchData.summary,
-      "status": "success",
+      "status": "success"
     ])
   }
 
@@ -184,7 +184,7 @@ public struct WebTool: Tool {
       "abstractSource": "",
       "relatedTopicsCount": 0,
       "summary": "Search failed for query: '\(query)'",
-      "status": "error",
+      "status": "error"
     ])
   }
 }

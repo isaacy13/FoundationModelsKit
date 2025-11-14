@@ -177,7 +177,7 @@ public struct CalendarTool: Tool {
         "startDate": formatDate(event.startDate),
         "endDate": formatDate(event.endDate),
         "location": event.location ?? "",
-        "calendar": event.calendar?.title ?? "",
+        "calendar": event.calendar?.title ?? ""
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -228,7 +228,7 @@ public struct CalendarTool: Tool {
       "count": events.count,
       "daysQueried": daysToQuery,
       "events": eventsDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-      "message": "Found \(events.count) event(s) in the next \(daysToQuery) days",
+      "message": "Found \(events.count) event(s) in the next \(daysToQuery) days"
     ])
   }
 
@@ -258,7 +258,7 @@ public struct CalendarTool: Tool {
       "url": event.url?.absoluteString ?? "",
       "hasAlarms": !(event.alarms?.isEmpty ?? true),
       "formattedDate":
-        "\(dateFormatter.string(from: event.startDate)) - \(dateFormatter.string(from: event.endDate))",
+        "\(dateFormatter.string(from: event.startDate)) - \(dateFormatter.string(from: event.endDate))"
     ])
   }
 
@@ -277,14 +277,12 @@ public struct CalendarTool: Tool {
     }
 
     if let startDateString = arguments.startDate,
-      let startDate = parseDate(startDateString)
-    {
+      let startDate = parseDate(startDateString) {
       event.startDate = startDate
     }
 
     if let endDateString = arguments.endDate,
-      let endDate = parseDate(endDateString)
-    {
+      let endDate = parseDate(endDateString) {
       event.endDate = endDate
     }
 
@@ -307,7 +305,7 @@ public struct CalendarTool: Tool {
         "startDate": formatDate(event.startDate),
         "endDate": formatDate(event.endDate),
         "location": event.location ?? "",
-        "calendar": event.calendar?.title ?? "",
+        "calendar": event.calendar?.title ?? ""
       ])
     } catch {
       return createErrorOutput(error: error)
@@ -332,7 +330,7 @@ public struct CalendarTool: Tool {
     return GeneratedContent(properties: [
       "status": "error",
       "error": error.localizedDescription,
-      "message": "Failed to perform calendar operation",
+      "message": "Failed to perform calendar operation"
     ])
   }
 }

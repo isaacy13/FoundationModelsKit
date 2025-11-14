@@ -94,7 +94,7 @@ public struct WebMetadataTool: Tool {
       "title": metadata.title,
       "description": metadata.description,
       "imageURL": metadata.imageURL ?? "",
-      "message": "Successfully extracted web metadata",
+      "message": "Successfully extracted web metadata"
     ])
   }
 
@@ -103,7 +103,7 @@ public struct WebMetadataTool: Tool {
       "status": "error",
       "url": url,
       "error": error.localizedDescription,
-      "message": "Failed to fetch web metadata",
+      "message": "Failed to fetch web metadata"
     ])
   }
 }
