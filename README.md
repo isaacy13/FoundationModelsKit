@@ -140,7 +140,15 @@ Add the required usage descriptions to your `Info.plist` for the tools you plan 
 
 ### API Keys
 
-**WebTool** requires an Exa API key. Configure it using `@AppStorage`:
+**WebTool** requires an Exa API key.
+
+> **⚠️ SECURITY WARNING**
+>
+> **Do note store API keys directly in your app code or use `@AppStorage` for your production apps.** API keys stored client-side can be extracted from your app bundle and misused.
+>
+> **Recommended approach:** Make API requests from a secure server where the API key is stored as an environment variable. Your app should call your server endpoint, which then makes the request to Exa's API.
+
+**For development/testing only**, you can configure the key using `@AppStorage`:
 
 ```swift
 import SwiftUI
@@ -153,7 +161,7 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
                 .onAppear {
-                    // Set your Exa API key
+                    // DEVELOPMENT ONLY - Never ship API keys in production
                     // Get your key from: https://exa.ai
                     exaAPIKey = "your-api-key-here"
                 }
@@ -161,6 +169,12 @@ struct MyApp: App {
     }
 }
 ```
+
+**Production setup:**
+1. Create a server endpoint (e.g., `/api/search`)
+2. Store your Exa API key in environment variables on the server
+3. Your app calls your server endpoint with the search query
+4. Your server makes the request to Exa's API and returns the results
 
 ## Tool Reference
 
