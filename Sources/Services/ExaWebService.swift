@@ -22,8 +22,6 @@ final class ExaWebService: Sendable {
       throw ExaWebServiceError.invalidURL
     }
 
-    print("🔍 ExaWebService: Starting search for query: '\(query)'")
-
     let requestBody = ExaSearchRequest(
       query: query,
       type: "auto",
@@ -40,11 +38,8 @@ final class ExaWebService: Sendable {
     do {
       request.httpBody = try JSONEncoder().encode(requestBody)
     } catch {
-      print("❌ ExaWebService: Failed to encode request body")
       throw ExaWebServiceError.encodingError
     }
-
-    print("🌐 ExaWebService: Making request to: \(url.absoluteString)")
 
     let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -52,28 +47,14 @@ final class ExaWebService: Sendable {
       throw ExaWebServiceError.invalidResponse
     }
 
-    print("📡 ExaWebService: Response status code: \(httpResponse.statusCode)")
-
     guard httpResponse.statusCode == 200 else {
-      if let errorString = String(data: data, encoding: .utf8) {
-        print("❌ ExaWebService: Error response: \(errorString)")
-      }
       throw ExaWebServiceError.apiError(statusCode: httpResponse.statusCode)
-    }
-
-    print("✅ ExaWebService: Successfully received response (\(data.count) bytes)")
-
-    // Debug: Print first 500 characters of response
-    if let responseString = String(data: data, encoding: .utf8) {
-      print("📄 ExaWebService: Response preview: \(responseString.prefix(500))...")
     }
 
     do {
       let searchResponse = try JSONDecoder().decode(ExaSearchResponse.self, from: data)
-      print("🔍 ExaWebService: Successfully parsed \(searchResponse.results.count) results")
       return searchResponse
     } catch {
-      print("❌ ExaWebService: Failed to decode response: \(error)")
       throw ExaWebServiceError.decodingError
     }
   }
