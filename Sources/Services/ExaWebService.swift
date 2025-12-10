@@ -37,8 +37,8 @@ final class ExaWebService: Sendable {
 
     do {
       request.httpBody = try JSONEncoder().encode(requestBody)
-    } catch {
-      throw ExaWebServiceError.encodingError
+    } catch let underlyingError {
+      throw ExaWebServiceError.encodingError(underlyingError)
     }
 
     let (data, response) = try await URLSession.shared.data(for: request)
@@ -48,14 +48,14 @@ final class ExaWebService: Sendable {
     }
 
     guard httpResponse.statusCode == 200 else {
-      throw ExaWebServiceError.apiError(statusCode: httpResponse.statusCode)
+      throw ExaWebServiceError.apiError(statusCode: httpResponse.statusCode, responseData: data)
     }
 
     do {
       let searchResponse = try JSONDecoder().decode(ExaSearchResponse.self, from: data)
       return searchResponse
-    } catch {
-      throw ExaWebServiceError.decodingError
+    } catch let underlyingError {
+      throw ExaWebServiceError.decodingError(underlyingError)
     }
   }
 }
@@ -161,24 +161,25 @@ struct ExaPerPagePrices: Codable {
 
 enum ExaWebServiceError: Error, LocalizedError {
   case invalidURL
-  case encodingError
+  case encodingError(Error)
   case invalidResponse
-  case apiError(statusCode: Int)
-  case decodingError
+  case apiError(statusCode: Int, responseData: Data?)
+  case decodingError(Error)
   case missingAPIKey
 
   var errorDescription: String? {
     switch self {
     case .invalidURL:
       return "Invalid Exa API URL"
-    case .encodingError:
-      return "Failed to encode request data"
+    case .encodingError(let underlyingError):
+      return "Failed to encode request data: \(underlyingError.localizedDescription)"
     case .invalidResponse:
       return "Invalid response from Exa API"
-    case .apiError(let statusCode):
-      return "Exa API error (Status: \(statusCode))"
-    case .decodingError:
-      return "Failed to decode Exa API response"
+    case .apiError(let statusCode, let responseData):
+      let responseString = responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "No response body"
+      return "Exa API error (Status: \(statusCode)): \(responseString)"
+    case .decodingError(let underlyingError):
+      return "Failed to decode Exa API response: \(underlyingError.localizedDescription)"
     case .missingAPIKey:
       return "Exa API key is required"
     }
