@@ -1,4 +1,6 @@
 # FoundationModelsKit
+[![Star History Chart](https://api.star-history.com/svg?repos=rryam/FoundationModelsKit&type=Date)](https://star-history.com/#rryam/FoundationModelsKit&Date)
+
 
 A collection of tools and utilities for Apple's Foundation Models Framework that help working with the language model, better.
 
