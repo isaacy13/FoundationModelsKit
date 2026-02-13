@@ -430,11 +430,13 @@ public struct LocationTool: Tool {
   }
 
   /// Checks if location authorization is sufficient for the current platform
-  @MainActor
-  private func checkLocationAuthorization() -> AuthorizationResult {
-    let status = locationManager.authorizationStatus
+  private func checkLocationAuthorization() async -> AuthorizationResult {
+    let status = await MainActor.run { locationManager.authorizationStatus }
+    let servicesEnabled = await Task(priority: .userInitiated) {
+      CLLocationManager.locationServicesEnabled()
+    }.value
 
-    guard CLLocationManager.locationServicesEnabled() else {
+    guard servicesEnabled else {
       return AuthorizationResult(
         status: status,
         isAuthorized: false,
